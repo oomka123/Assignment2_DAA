@@ -20,34 +20,69 @@ public class BenchmarkRunner {
     public static void run(String[] args) {
         String algorithmName = "BoyerMooreMajorityVote";
         List<Integer> sizes = parseSizes(args);
+        String outputFile = parseOutput(args);
+        boolean withMajority = parseWithMajority(args);
         if (sizes.isEmpty()) {
-            sizes = Arrays.asList(100, 1000, 10000);
+            sizes = Arrays.asList(1500, 1000, 10000);
         }
-
+        if (outputFile == null) {
+            outputFile = "benchmarks.csv";
+        }
+        // Print configuration
+        System.out.println("Benchmark configuration:");
+        System.out.println("  sizes = " + sizes);
+        System.out.println("  output = " + outputFile);
+        System.out.println("  withMajority = " + withMajority);
         System.out.println("Running " + algorithmName + " benchmark...");
 
         for (int size : sizes) {
-            int[] array = generateArray(size);
+            int[] array = generateArray(size, withMajority);
             Metrics metrics = new Metrics();
             long start = System.currentTimeMillis();
             Integer result = BoyerMooreMajorityVote.findMajority(array, metrics);
             long end = System.currentTimeMillis();
             double timeTaken = metrics.getElapsedMs();
 
-            System.out.println("Size=" + size + " -> time=" + timeTaken + " ms, result=" + result + ", comparisons=" + metrics.getComparisons());
+            // Avoid null when printing result or comparisons
+            String resultStr = (result != null) ? result.toString() : "null";
+            long comparisons = (metrics != null) ? metrics.getComparisons() : 0;
 
-            // write to CSV using correct signature: appendRecord(Metrics, algorithm, n, path)
+            System.out.printf("Size=%d -> time=%.6f ms, result=%s, comparisons=%d%n",
+                    size, timeTakenMs, resultStr, comparisons);
+
             try {
-                CsvWriter.appendRecord(metrics, algorithmName, size, "benchmarks.csv");
+                CsvWriter.appendRecord(metrics, algorithmName, size, outputFile);
             } catch (Exception e) {
                 System.err.println("Failed to append CSV record: " + e.getMessage());
             }
         }
     }
 
-    private static int[] generateArray(int n) {
+    private static int[] generateArray(int n, boolean withMajority) {
         int[] array = new int[n];
-        for (int i = 0; i < n; i++) array[i] = (int) (Math.random() * Math.max(1, n));
+        if (withMajority && n > 0) {
+            // 60% of array is filled with the majority element (e.g., 5)
+            int majority = 5;
+            int majorityCount = (int) Math.ceil(n * 0.6);
+            for (int i = 0; i < majorityCount; i++) {
+                array[i] = majority;
+            }
+            for (int i = majorityCount; i < n; i++) {
+                int val;
+                do {
+                    val = (int) (Math.random() * Math.max(1, n + 1));
+                } while (val == majority);
+                array[i] = val;
+            }
+            for (int i = n - 1; i > 0; i--) {
+                int j = (int) (Math.random() * (i + 1));
+                int tmp = array[i];
+                array[i] = array[j];
+                array[j] = tmp;
+            }
+        } else {
+            for (int i = 0; i < n; i++) array[i] = (int) (Math.random() * Math.max(1, n));
+        }
         return array;
     }
 
@@ -68,5 +103,23 @@ public class BenchmarkRunner {
             }
         }
         return Arrays.asList();
+    }
+
+    private static String parseOutput(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            if ("--output".equals(args[i]) && i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                return args[i + 1];
+            }
+        }
+        return null;
+    }
+
+    private static boolean parseWithMajority(String[] args) {
+        for (String arg : args) {
+            if ("--with-majority".equals(arg)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
