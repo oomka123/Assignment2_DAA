@@ -14,7 +14,7 @@ public class CsvWriter {
         public final Instant timestamp;
         public final String algorithm;
         public final int n;
-        public final long timeMs;
+        public final double timeMs;
         public final long comparisons;
         public final long assignments;
         public final long iterations;
@@ -24,7 +24,7 @@ public class CsvWriter {
             this.timestamp = Instant.now();
             this.algorithm = algorithm;
             this.n = n;
-            this.timeMs = metrics.getElapsedNs() / 1_000_000;
+            this.timeMs = metrics.getElapsedNs() / 1_000_000.0;
             this.comparisons = metrics.getComparisons();
             this.assignments = metrics.getAssignments();
             this.iterations = metrics.getIterations();
@@ -51,7 +51,7 @@ public class CsvWriter {
                 }
 
                 for (Record r : records) {
-                    pw.printf(Locale.US, "%s,%s,%d,%d,%d,%d,%d,%d%n",
+                    pw.printf(Locale.US, "%s,%s,%d,%.6f,%d,%d,%d,%d%n",
                             r.timestamp.toString(),
                             r.algorithm,
                             r.n,
