@@ -48,7 +48,7 @@ public class BenchmarkRunner {
             long comparisons = (metrics != null) ? metrics.getComparisons() : 0;
 
             System.out.printf("Size=%d -> time=%.6f ms, result=%s, comparisons=%d%n",
-                    size, timeTakenMs, resultStr, comparisons);
+                    size, timeTaken, resultStr, comparisons);
 
             try {
                 CsvWriter.appendRecord(metrics, algorithmName, size, outputFile);
