@@ -14,6 +14,10 @@ import org.example.metrics.CsvWriter;
 public class BenchmarkRunner {
 
     public static void main(String[] args) {
+        run(args);
+    }
+
+    public static void run(String[] args) {
         String algorithmName = "BoyerMooreMajorityVote";
         List<Integer> sizes = parseSizes(args);
         if (sizes.isEmpty()) {
@@ -28,7 +32,7 @@ public class BenchmarkRunner {
             long start = System.currentTimeMillis();
             Integer result = BoyerMooreMajorityVote.findMajority(array, metrics);
             long end = System.currentTimeMillis();
-            long timeTaken = end - start;
+            double timeTaken = metrics.getElapsedMs();
 
             System.out.println("Size=" + size + " -> time=" + timeTaken + " ms, result=" + result + ", comparisons=" + metrics.getComparisons());
 
