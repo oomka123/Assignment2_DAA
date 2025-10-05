@@ -34,26 +34,45 @@ public class CsvWriter {
 
     public static void write(String path, List<Record> records, boolean append) throws IOException {
         File file = new File(path);
-        boolean fileExists = file.exists();
-
-        try (PrintWriter pw = new PrintWriter(new FileWriter(file, append))) {
-            if (!fileExists) {
-                pw.println("timestamp,algorithm,n,time_ms,comparisons,assignments,iterations,memory_bytes");
+        try {
+            File parent = file.getParentFile();
+            if (parent != null && !parent.exists()) {
+                if (parent.mkdirs()) {
+                    System.out.println("Created directories for path: " + parent.getAbsolutePath());
+                } else if (!parent.exists()) {
+                    throw new IOException("Failed to create directories for path: " + parent.getAbsolutePath());
+                }
             }
+            boolean fileExists = file.exists();
 
-            for (Record r : records) {
-                pw.printf(Locale.US, "%s,%s,%d,%d,%d,%d,%d,%d%n",
-                        r.timestamp.toString(),
-                        r.algorithm,
-                        r.n,
-                        r.timeMs,
-                        r.comparisons,
-                        r.assignments,
-                        r.iterations,
-                        r.memoryBytes
-                );
+            try (PrintWriter pw = new PrintWriter(new FileWriter(file, append))) {
+                if (!fileExists) {
+                    pw.println("timestamp,algorithm,n,time_ms,comparisons,assignments,iterations,memory_bytes");
+                }
+
+                for (Record r : records) {
+                    pw.printf(Locale.US, "%s,%s,%d,%d,%d,%d,%d,%d%n",
+                            r.timestamp.toString(),
+                            r.algorithm,
+                            r.n,
+                            r.timeMs,
+                            r.comparisons,
+                            r.assignments,
+                            r.iterations,
+                            r.memoryBytes
+                    );
+                }
+                System.out.println("Successfully wrote " + records.size() + " record(s) to " + path);
             }
+        } catch (IOException e) {
+            System.err.println("Error writing to CSV file: " + e.getMessage());
+            throw e;
         }
+    }
+
+    public static void appendRecord(Metrics metrics, String algorithm, int n, String path) throws IOException {
+        Record record = new Record(algorithm, n, metrics);
+        write(path, List.of(record), true);
     }
 
 }

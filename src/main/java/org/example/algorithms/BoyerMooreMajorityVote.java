@@ -88,4 +88,10 @@ public final class BoyerMooreMajorityVote {
         return metrics;
     }
 
+    public static Integer majorityElement(int[] arr) {
+        BoyerMooreMajorityVote bm = new BoyerMooreMajorityVote();
+        bm.run(arr);
+        return bm.hasMajority() ? bm.getCandidate() : null;
+    }
+
 }
