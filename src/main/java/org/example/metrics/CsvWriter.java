@@ -14,7 +14,7 @@ public class CsvWriter {
         public final Instant timestamp;
         public final String algorithm;
         public final int n;
-        public final long timeNs;
+        public final long timeMs;
         public final long comparisons;
         public final long assignments;
         public final long iterations;
@@ -24,7 +24,7 @@ public class CsvWriter {
             this.timestamp = Instant.now();
             this.algorithm = algorithm;
             this.n = n;
-            this.timeNs = metrics.getElapsedNs();
+            this.timeMs = metrics.getElapsedNs() / 1_000_000;
             this.comparisons = metrics.getComparisons();
             this.assignments = metrics.getAssignments();
             this.iterations = metrics.getIterations();
@@ -38,7 +38,7 @@ public class CsvWriter {
 
         try (PrintWriter pw = new PrintWriter(new FileWriter(file, append))) {
             if (!fileExists) {
-                pw.println("timestamp,algorithm,n,time_ns,comparisons,assignments,iterations,memory_bytes");
+                pw.println("timestamp,algorithm,n,time_ms,comparisons,assignments,iterations,memory_bytes");
             }
 
             for (Record r : records) {
@@ -46,7 +46,7 @@ public class CsvWriter {
                         r.timestamp.toString(),
                         r.algorithm,
                         r.n,
-                        r.timeNs,
+                        r.timeMs,
                         r.comparisons,
                         r.assignments,
                         r.iterations,
