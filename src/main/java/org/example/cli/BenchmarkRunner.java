@@ -38,18 +38,17 @@ public class BenchmarkRunner {
         for (int size : sizes) {
             int[] array = generateArray(size, withMajority);
             Metrics metrics = new Metrics();
-            long start = System.nanoTime();
+            long start = System.currentTimeMillis();
             Integer result = BoyerMooreMajorityVote.findMajority(array, metrics);
-            long end = System.nanoTime();
-
-            double timeTakenMs = (end - start) / 1_000_000.0;
+            long end = System.currentTimeMillis();
+            double timeTaken = metrics.getElapsedMs();
 
             // Avoid null when printing result or comparisons
             String resultStr = (result != null) ? result.toString() : "null";
             long comparisons = (metrics != null) ? metrics.getComparisons() : 0;
 
             System.out.printf("Size=%d -> time=%.6f ms, result=%s, comparisons=%d%n",
-                    size, timeTakenMs, resultStr, comparisons);
+                    size, timeTaken, resultStr, comparisons);
 
             try {
                 CsvWriter.appendRecord(metrics, algorithmName, size, outputFile);
